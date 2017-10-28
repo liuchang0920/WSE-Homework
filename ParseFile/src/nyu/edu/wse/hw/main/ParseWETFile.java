@@ -20,14 +20,15 @@ public class ParseWETFile {
 
     //  URL table
     private URLTable urlTable = new URLTable(new HashMap<>());
-    private static final String URLTable_FILE_NAME = "/home/liuchang/Documents/study/wse/homework/hw2/ParseFile/data/urltable/URLTable.txt";
+    private static final String URLTable_FILE_NAME = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/urltable/URLTable.txt";
 
     // wet file path
-    private static final String WET_FILE_FOLDER = "/media/liuchang/New Volume/study/wse/hw2-data/sample-data/";
+    //private static final String WET_FILE_FOLDER = "/media/liuchang/New Volume/study/wse/hw2-data/sample-data/";
+    private static final String WET_FILE_FOLDER = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/wet-files/";
 
     // intermediate file
-    //private static final String INTERMEDIATE_FILE = "/home/liuchang/Documents/study/wse/homework/hw2/ParseFile/data/inverted-intermediate/temp.txt";
-    private static final String INTERMEDIATE_FILE = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-intermediate/temp.txt";
+    private static final String INTERMEDIATE_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-intermediate/temp.txt";
+    //private static final String INTERMEDIATE_FILE = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-intermediate/temp.txt";
 
     // logging
     private static final Logger log = Logger.getLogger("parseWETFilelogger");
@@ -81,6 +82,7 @@ public class ParseWETFile {
         String url = "";
 
         int i=0;
+        int wordCounter =0;
         while(!EMPTY_STR.equals(split[i])) {
             // try parse url and all
             if(split[i].indexOf(URL_PRE_STR) != -1) {
@@ -97,6 +99,7 @@ public class ParseWETFile {
                 // stats on words
                 String extractWord = split[i].substring(m.start(), m.end());
                 hasVisited.add(extractWord);
+                wordCounter++;
                 addOne(wordDict, extractWord);
             }
             i++;
@@ -109,7 +112,7 @@ public class ParseWETFile {
         out.flush();
 
         // update url table
-        urlTable.addURL(url, hasVisited.size());
+        urlTable.addURL(url, wordCounter); // 这里存放的大小有bug, 应该存放见到过的全部单词个数，包括重复的
 
     }
 
@@ -132,6 +135,7 @@ public class ParseWETFile {
 
     }
 
+    // used in intermediate file
     private void addOne(HashMap<String, Integer> wordDict, String word) {
         if(wordDict.containsKey(word)) {
             wordDict.put(word, wordDict.get(word) + 1);

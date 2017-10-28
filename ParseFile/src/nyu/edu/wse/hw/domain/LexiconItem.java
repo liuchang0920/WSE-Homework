@@ -9,19 +9,13 @@ public class LexiconItem implements Serializable {
     long startIndex;
     long endIndex; // off sets ??
 
-    private int wordId;
+    //private int wordId;
     private int count;
 
-    public LexiconItem(int wordId, int count) {
-
-        this.wordId = wordId;
-        this.count = count;
-    }
-
-    public LexiconItem(long startIndex, long endIndex, int wordId, int count) {
+    public LexiconItem(int count, long startIndex, long endIndex) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
-        this.wordId = wordId;
+        //this.wordId = wordId;
         this.count = count;
     }
 
@@ -29,13 +23,13 @@ public class LexiconItem implements Serializable {
         this.count++;
     }
 
-    public int getWordId() {
-        return wordId;
-    }
-
-    public void setWordId(int wordId) {
-        this.wordId = wordId;
-    }
+//    public int getWordId() {
+//        return wordId;
+//    }
+//
+//    public void setWordId(int wordId) {
+//        this.wordId = wordId;
+//    }
 
     public int getCount() {
         return count;
