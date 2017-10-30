@@ -2,17 +2,18 @@ package nyu.edu.wse.hw.domain;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class URLTable implements Serializable{
 
     private static final long serialVersionUID = -3786582051180944371L;
 
     private HashMap<Integer, URLTableItem> map;
-    private static int COUNTER; // serves as docID
+    private static AtomicInteger COUNTER; // serves as docID
 
     public URLTable(HashMap<Integer, URLTableItem> map) {
         this.map = map;
-        this.COUNTER = map.size();
+        this.COUNTER = new AtomicInteger(map.size());
     }
 
     // 更新放到之类来操作
@@ -21,11 +22,12 @@ public class URLTable implements Serializable{
     }
 
     public void addURL(String url, int size) {
-        map.put(COUNTER, new URLTableItem(COUNTER++, url, size));
+        map.put(COUNTER.get(), new URLTableItem(COUNTER.get(), url, size));
+        COUNTER.incrementAndGet();
     }
 
     public static int getCounter() {
-        return COUNTER;
+        return COUNTER.get();
     }
 
     public int getSize() {

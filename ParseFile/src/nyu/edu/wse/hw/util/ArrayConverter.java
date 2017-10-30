@@ -2,6 +2,8 @@ package nyu.edu.wse.hw.util;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ArrayConverter {
 
@@ -24,11 +26,20 @@ public class ArrayConverter {
     }
 
     public static void main(String[] args) {
-        int[] testArr = {1,2,3,4,5, 9999, 21};
-        byte[] byteArray = ArrayConverter.toByteArray(testArr);
-
-        int [] converted = ArrayConverter.toIntArray(byteArray);
-        for(int item: converted) {
+//        int[] testArr = {1,2,3,4,5, 9999, 21};
+//        byte[] byteArray = ArrayConverter.toByteArray(testArr);
+//
+//        int [] converted = ArrayConverter.toIntArray(byteArray);
+//        for(int item: converted) {
+//            System.out.println(item);
+//        }
+        List<Integer> auxiliaryList = new ArrayList<>();
+        auxiliaryList.add(1);
+        auxiliaryList.add(2);
+        auxiliaryList.add(3);
+        auxiliaryList.add(4);
+        int[] array = auxiliaryList.stream().mapToInt(i -> i).toArray();
+        for(int item: array) {
             System.out.println(item);
         }
     }

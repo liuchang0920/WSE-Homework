@@ -1,10 +1,15 @@
 package nyu.edu.wse.hw.main;
 
 import nyu.edu.wse.hw.domain.URLTable;
+import nyu.edu.wse.hw.thread.SnapShotWriter;
 import nyu.edu.wse.hw.util.GZipReader;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +35,13 @@ public class ParseWETFile {
     private static final String INTERMEDIATE_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-intermediate/temp.txt";
     //private static final String INTERMEDIATE_FILE = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-intermediate/temp.txt";
 
+    // multi threading
+    private static final int NUM_OF_PARALLEL = 10;
+    private static final String SNAPHOT_PATH = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/snapshot/";
+    public ExecutorService snapshotService;
+    public CountDownLatch countDownLatch;
+    private ExecutorService intermediatePostingService;
+
     // logging
     private static final Logger log = Logger.getLogger("parseWETFilelogger");
 
@@ -46,6 +58,7 @@ public class ParseWETFile {
             fileNames.add(file.getName());
         }
 
+
         FileWriter fw = new FileWriter(INTERMEDIATE_FILE, false);
         BufferedWriter bw = new BufferedWriter(fw);
         PrintWriter out = new PrintWriter(bw);
@@ -58,6 +71,8 @@ public class ParseWETFile {
             }
         }
 
+        parser.snapshotService.shutdown();// not safe
+
         out.close();
         bw.close();
         fw.close();
@@ -65,6 +80,14 @@ public class ParseWETFile {
         parser.writeURLTableToDisk();
 
         log.info("finish generating intermediate file");
+    }
+
+    // constructor
+    public ParseWETFile() {
+        // switch to multi threading
+        this.snapshotService = Executors.newFixedThreadPool(NUM_OF_PARALLEL);
+        this.intermediatePostingService = Executors.newFixedThreadPool(NUM_OF_PARALLEL);
+        this.countDownLatch = new CountDownLatch(1);
     }
 
     // read input file
@@ -93,7 +116,9 @@ public class ParseWETFile {
         }
 
         // word count
+        StringBuffer sbToSave = new StringBuffer();
         while(i<split.length) {
+
             Matcher m = PATTERN.matcher(split[i]);
             while(m.find()) {
                 // stats on words
@@ -102,7 +127,10 @@ public class ParseWETFile {
                 wordCounter++;
                 addOne(wordDict, extractWord);
             }
+
+            sbToSave.append(split[i] + '\n');
             i++;
+
         }
 
         // write to intermediate file
@@ -114,6 +142,8 @@ public class ParseWETFile {
         // update url table
         urlTable.addURL(url, wordCounter); // 这里存放的大小有bug, 应该存放见到过的全部单词个数，包括重复的
 
+        // generate snapshot
+        this.snapshotService.execute(new SnapShotWriter(SNAPHOT_PATH, this.urlTable.getCounter(), sbToSave.toString()));
     }
 
 
