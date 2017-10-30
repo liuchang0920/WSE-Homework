@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 public class Lexicon implements Serializable{
 
-    static final long serialVersionUID = 110L;
+    private static final long serialVersionUID = 110L;
     private HashMap<String, LexiconItem> map;
     public static int COUNTER = 0; // serves as wordID
 

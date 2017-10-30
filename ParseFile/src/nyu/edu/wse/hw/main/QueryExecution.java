@@ -1,13 +1,12 @@
 package nyu.edu.wse.hw.main;
 
-import nyu.edu.wse.hw.domain.DocFrequency;
-import nyu.edu.wse.hw.domain.Lexicon;
-import nyu.edu.wse.hw.domain.LexiconItem;
-import nyu.edu.wse.hw.domain.QueryResult;
+import nyu.edu.wse.hw.domain.*;
+import nyu.edu.wse.hw.util.ArrayConverter;
 import nyu.edu.wse.hw.util.VariableByteCode;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +21,15 @@ public class QueryExecution {
     private static final String LEXICON_FILE_PATH = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/lexicon/";
     //private static final String LEXICON_FILE_PATH =  "/media/liuchang/New Volume/study/wse/hw2-data/lexicon/";
 
+    // lexicon
     private Lexicon lexicon;
+
+    //  URL table
+    private URLTable urlTable;
+    private static final String URLTable_FILE_NAME = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/urltable/URLTable.txt";
+
+    // number of posting per chunk
+    private static final int NUM_OF_POSTING = 500;
 
     // logging
     private static final Logger log = Logger.getLogger("QueryExecution");
@@ -32,16 +39,25 @@ public class QueryExecution {
 
         QueryExecution execution = new QueryExecution();
         execution.query(null);
+
+        /*
+        while(true) {
+            // handle request
+        }
+         */
+
     }
 
     public QueryExecution() {
 
         // init lexicon
         lexicon = new Lexicon();
-        initLexicon();
+        loadLexicon();
+        loadURLTable();
+
     }
 
-    private void initLexicon() {
+    private void loadLexicon() {
         try{
             FileReader fr = new FileReader(this.LEXICON_FILE_PATH+this.LEXICON_FILE);
             BufferedReader br = new BufferedReader(fr);
@@ -75,66 +91,82 @@ public class QueryExecution {
         }
     }
 
+    private void loadURLTable() {
+
+        FileInputStream fis;
+        ObjectInputStream ois;
+        try {
+            fis = new FileInputStream(URLTable_FILE_NAME);
+            ois = new ObjectInputStream(fis);
+            urlTable = (URLTable) ois.readObject();
+            System.out.println("finsh loading url table, size: " + urlTable.getSize());
+        } catch (Exception e) {
+          log.log(Level.SEVERE, "error while loading url table: " + e.getMessage());
+        }
+    }
+
     public List<QueryResult> query(List<String> keywords) {
 
         String temp = "build";
-        List<QueryResult> result = new ArrayList<>();
+        TermInformation termInformation = openList(temp);
 
-        // implement DAAT
-        List<RandomAccessFile> lp = new ArrayList<>();
-        for(String keyword: keywords) {
-            lp.add(openList(keyword));
-        }
-
-        DocFrequency did = new DocFrequency(-1, 0);
-        List<DocFrequency> frequencies;
-        // document id ??
-        while(did.getDocId() <= Integer.MAX_VALUE) {
-
-            frequencies = new ArrayList<>();
-            did = nextGEQ(lp.get(0), did.getDocId());
-            frequencies.add(did);
-            int tempDoc = did.getDocId();
-            for(int i=0;i<lp.size();i++) {
-                DocFrequency tempDocFreq = nextGEQ(lp.get(i), did.getDocId());
-                frequencies.add(tempDocFreq);
-                tempDoc = Math.max(did.getDocId(), tempDocFreq.getDocId());
-            }
-            if(tempDoc == did.getDocId()) {
-                // BM25 compute frequency
-
-                did.setDocId(did.getDocId()+1);
-            } else {
-                did.setDocId(tempDoc);// docid and frequency not compatible
-            }
-        }
-
-
-        // close list
-        for(RandomAccessFile file: lp) {
-            closeList(file);
-        }
-
-        return result;
-
+//        List<QueryResult> result = new ArrayList<>();
+//
+//        // implement DAAT
+//        List<RandomAccessFile> lp = new ArrayList<>();
+//        for(String keyword: keywords) {
+//            lp.add(openList(keyword));
+//        }
+//
+//        DocFrequency did = new DocFrequency(-1, 0);
+//        List<DocFrequency> frequencies;
+//        // document id ??
+//        while(did.getDocId() <= Integer.MAX_VALUE) {
+//
+//            frequencies = new ArrayList<>();
+//            did = nextGEQ(lp.get(0), did.getDocId());
+//            frequencies.add(did);
+//            int tempDoc = did.getDocId();
+//            for(int i=0;i<lp.size();i++) {
+//                DocFrequency tempDocFreq = nextGEQ(lp.get(i), did.getDocId());
+//                frequencies.add(tempDocFreq);
+//                tempDoc = Math.max(did.getDocId(), tempDocFreq.getDocId());
+//            }
+//            if(tempDoc == did.getDocId()) {
+//                // BM25 compute frequency
+//
+//                did.setDocId(did.getDocId()+1);
+//            } else {
+//                did.setDocId(tempDoc);// docid and frequency not compatible
+//            }
+//        }
+//
+//
+//        // close list
+//        for(RandomAccessFile file: lp) {
+//            closeList(file);
+//        }
+//
+//        return result;
+          return null;
     }
 
     // provide interface for the index in the inverted file given a keyword
-    private RandomAccessFile openList(String keyword) {
-            try{
-                LexiconItem lexiconItem = lexicon.getWordInfo(keyword);
-                File file = new File(this.INVERTED_FILE_PATH+this.INVERTED_FILE);
-                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
-                randomAccessFile.seek(lexiconItem.getStartIndex());
-                return randomAccessFile;
-            } catch (IOException ioe) {
-                log.log(Level.SEVERE, "ioexception while searching for keyword: " + keyword);
-                return null;
+//    public RandomAccessFile openList(String keyword) {
+//            try{
+//                LexiconItem lexiconItem = lexicon.getWordInfo(keyword);
+//                File file = new File(this.INVERTED_FILE_PATH+this.INVERTED_FILE);
+//                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
+//                randomAccessFile.seek(lexiconItem.getStartIndex());
+//                return randomAccessFile;
+//            } catch (IOException ioe) {
+//                log.log(Level.SEVERE, "ioexception while searching for keyword: " + keyword);
+//                return null;
+//
+//            }
+//    }
 
-            }
-    }
-
-    private boolean closeList(RandomAccessFile raf) {
+    public boolean closeList(RandomAccessFile raf) {
         try{
             raf.close();
             return true;
@@ -143,15 +175,45 @@ public class QueryExecution {
         }
     }
 
-    private DocFrequency nextGEQ(RandomAccessFile raf, int docId) {
+    public DocFrequency nextGEQ(RandomAccessFile raf, int docId) {
         // uncompress in here ??
         return null;
     }
 
-    private int getGreq(DocFrequency docFrequency) {
+    public int getGreq(DocFrequency docFrequency) {
         return docFrequency.getFequency();
     }
 
+    private TermInformation openList(String keyword) {
+        // seek its auxiliar table
+        if(this.lexicon.contains(keyword)) {
+            try{
+                File file = new File(this.INVERTED_FILE_PATH+this.INVERTED_FILE);
+                RandomAccessFile raf = new RandomAccessFile(file, "r");
 
+                LexiconItem lexiconItem = lexicon.getWordInfo(keyword);
+                int frequency = lexiconItem.getCount();
+                int chunk = frequency / NUM_OF_POSTING;
+                if(frequency % NUM_OF_POSTING != 0) chunk+=1;
+
+                raf.seek(lexiconItem.getStartIndex());
+                System.out.println("chunk size: " + chunk);
+                byte[] auxiliaryBytes = new byte[chunk*2*4];// 1 int --> 4 byte, 2 for (last docId, chunk size)
+                raf.read(auxiliaryBytes);
+                int[] auxiliaryTable = ArrayConverter.toIntArray(auxiliaryBytes);
+                for(int item: auxiliaryTable) {
+                    System.out.println(item);
+                }
+                return new TermInformation(raf, auxiliaryTable);
+            } catch (IOException ioe) {
+                log.log(Level.SEVERE, "error retrieving meta for term: " + keyword);
+                return null;
+            }
+
+        } else {
+            log.log(Level.SEVERE, "lexicon doesn't contain: "+ keyword);
+            return null;
+        }
+    }
 
 }

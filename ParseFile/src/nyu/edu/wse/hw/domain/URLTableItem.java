@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 public class URLTableItem implements Serializable{
 
+    private static final long serialVersionUID = 3985228888535656576L;
+
     int docID;
     String url;
     int size;

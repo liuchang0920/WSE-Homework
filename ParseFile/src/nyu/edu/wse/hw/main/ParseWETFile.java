@@ -119,14 +119,14 @@ public class ParseWETFile {
 
     private void writeURLTableToDisk() {
         try{
-            FileOutputStream fos = new FileOutputStream(URLTable_FILE_NAME, true);
+            FileOutputStream fos = new FileOutputStream(URLTable_FILE_NAME, false);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(this.urlTable);
             oos.close();
             fos.close();
             System.out.println(URLTable.getCounter());
             System.out.println("finish writing url table to file");
-
+            System.out.println("url table size: " + urlTable.getSize());
         } catch (IOException ioe) {
             System.out.println("error writing url table to file");
             System.out.println(ioe);

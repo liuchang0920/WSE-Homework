@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 public class URLTable implements Serializable{
 
+    private static final long serialVersionUID = -3786582051180944371L;
+
     private HashMap<Integer, URLTableItem> map;
     private static int COUNTER; // serves as docID
 
@@ -24,5 +26,9 @@ public class URLTable implements Serializable{
 
     public static int getCounter() {
         return COUNTER;
+    }
+
+    public int getSize() {
+        return map.size();
     }
 }

@@ -3,6 +3,7 @@ package nyu.edu.wse.hw.main;
 import nyu.edu.wse.hw.domain.DocFrequency;
 import nyu.edu.wse.hw.domain.Lexicon;
 import nyu.edu.wse.hw.domain.LexiconItem;
+import nyu.edu.wse.hw.util.ArrayConverter;
 import nyu.edu.wse.hw.util.VariableByteCode;
 
 import java.io.*;
@@ -31,8 +32,8 @@ public class BuildInvertedIndexCompress {
     private long startIndex = 0;// off set by byte
     private long endIndex = -1;
 
-    // blockwise compression
-    private static final int NUM_OF_POSTING = 128;
+    // number of posting per chunk
+    private static final int NUM_OF_POSTING = 500;
 
     // logging
     private static final Logger log = Logger.getLogger("buildInvertedIndex");
@@ -76,38 +77,20 @@ public class BuildInvertedIndexCompress {
 
                 count += 1;
 
-                List<Integer> docIdFreqPair = new ArrayList<>();
-                List<Integer> auxiliaryList = new ArrayList<>();
-
-                // build auxiliaryList
-                int docIdPairSize = curList.size();
-                int numOfChunk = docIdPairSize / NUM_OF_POSTING;
-                for(int temp = 1;temp * NUM_OF_POSTING <= docIdPairSize;temp++) {
-                    docIdFreqPair.add(curList.get(temp * NUM_OF_POSTING-1).getDocId());// eg: index 127, temp * NUM.. = 128 --> need to save this index
-                }
-
-                curList.forEach(item -> {
-
-                    docIdFreqPair.add(item.getDocId());
-                    docIdFreqPair.add(item.getFequency());
-
-                });
-
-
-                byte[] compressedPair = VariableByteCode.encode(docIdFreqPair);
-                fos.write(compressedPair);
-                endIndex += compressedPair.length;
+                // save inverted index
+                saveInvertedIndex(curList, fos);
 
                 // System.out.println("finish building: " + cur);
                 // update lexicon file
-                lexicon.addWord(cur, new LexiconItem(curList.size() - numOfChunk, startIndex, endIndex));
+                lexicon.addWord(cur, new LexiconItem(curList.size(), startIndex, endIndex-1));
 
                 // update parameters
                 cur = split[0];
                 curList = new ArrayList<>();
                 curList.add(new DocFrequency(Integer.parseInt(split[1]), Integer.parseInt(split[2])));
+
                 // update offset
-                startIndex = endIndex+1;
+                startIndex = endIndex;// 难道是这里？
 
             }
         }
@@ -140,6 +123,66 @@ public class BuildInvertedIndexCompress {
         fout.close();
         System.out.println("finish writing lexicon to file");
 
+    }
+
+    private void saveInvertedIndex(List<DocFrequency> curList, FileOutputStream fos) {
+
+        List<Integer> auxiliaryList = new ArrayList<>(); // used for building auxiliary, will be convert to byte[]
+        List<byte[]> invertedListToSave = new ArrayList<>(); // intermediate file to temporarily save compressed inverted file
+        List<Integer> tempListToSave = new ArrayList<>(); // used to store data when building each chunk
+
+        // write auxiliary list
+        for(int i=0;i<curList.size();i++) {
+
+            tempListToSave.add(curList.get(i).getDocId());
+            tempListToSave.add(curList.get(i).getFequency());
+
+            // compress each NUM_OF_POSTING of postings
+            if(((i+1) % (NUM_OF_POSTING) == 0)) {//save on 499　每５００个存一次, but in pair
+//                if(i>500) {
+//                    System.out.println("create chunk: " + i);
+//                }
+                // compress
+                byte[] compressedChunk = VariableByteCode.encode(tempListToSave);
+                // record to auxiliary table: (docId, compressed chunk length)
+                auxiliaryList.add(curList.get(i).getDocId());
+                auxiliaryList.add(compressedChunk.length);
+                // save compressed files in this chunk to list
+                invertedListToSave.add(compressedChunk);
+
+                tempListToSave = new ArrayList<>();
+            }
+        }
+        // check if tempListToSave is empty, otherwise use another chunk to save rest files
+        if(tempListToSave.size()>0) {
+            //System.out.println("leftover: " + tempListToSave.size()/2);
+            byte[] compressedChunk = VariableByteCode.encode(tempListToSave);
+            auxiliaryList.add(curList.get(curList.size()-1).getDocId());// last docid in this chunk
+            auxiliaryList.add(compressedChunk.length);
+            invertedListToSave.add(compressedChunk);
+        }
+
+        try{
+            byte[] auxiliaryBytes = ArrayConverter.toByteArray(auxiliaryList.stream().mapToInt(i -> i).toArray());
+            fos.write(auxiliaryBytes);
+            endIndex += auxiliaryBytes.length;
+            if(auxiliaryBytes.length>160) {
+                System.out.println("auxiliary size: " + auxiliaryBytes.length/8);
+            }
+            // save invertedList
+            for(byte[] tempCompressed: invertedListToSave) {
+                fos.write(tempCompressed);
+                endIndex += tempCompressed.length;
+
+            }
+
+            // update index
+            //log.log(Level.INFO, "update endIndex");
+
+
+        } catch (IOException ioe) {
+            log.log(Level.SEVERE, "error while writing to inverted file: " + ioe.getMessage());
+        }
     }
 
 }
