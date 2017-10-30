@@ -1,13 +1,13 @@
 package nyu.edu.wse.hw.main;
 
 import nyu.edu.wse.hw.domain.URLTable;
+import nyu.edu.wse.hw.domain.URLTableItem;
 import nyu.edu.wse.hw.thread.SnapShotWriter;
 import nyu.edu.wse.hw.util.GZipReader;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -41,6 +41,9 @@ public class ParseWETFile {
     public ExecutorService snapshotService;
     public CountDownLatch countDownLatch;
     private ExecutorService intermediatePostingService;
+
+    // save params for bm25
+    private static final String BM25_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/bm25-config/bm25-config";
 
     // logging
     private static final Logger log = Logger.getLogger("parseWETFilelogger");
@@ -77,7 +80,26 @@ public class ParseWETFile {
         bw.close();
         fw.close();
 
-        parser.writeURLTableToDisk();
+        // save urltable
+        //parser.writeURLTableToDisk();
+
+        // save params for bm25
+        double avg = 0;
+        for(Map.Entry<Integer, URLTableItem> urlItem: parser.urlTable.getMap().entrySet()) {
+            avg += urlItem.getValue().getSize();
+        }
+        int size = parser.urlTable.getSize();
+        Properties prop = new Properties();
+        OutputStream os;
+        try {
+            os = new FileOutputStream(BM25_CONFIG_FILE);
+            prop.setProperty("total", Integer.toString(size));
+            prop.setProperty("avg", Double.toString(avg/size));// hope works
+            prop.store(os, null);
+            os.close();
+        } catch (IOException ioe) {
+            System.out.println("error saving params for bm25");
+        }
 
         log.info("finish generating intermediate file");
     }
@@ -143,7 +165,7 @@ public class ParseWETFile {
         urlTable.addURL(url, wordCounter); // 这里存放的大小有bug, 应该存放见到过的全部单词个数，包括重复的
 
         // generate snapshot
-        this.snapshotService.execute(new SnapShotWriter(SNAPHOT_PATH, this.urlTable.getCounter(), sbToSave.toString()));
+        //this.snapshotService.execute(new SnapShotWriter(SNAPHOT_PATH, this.urlTable.getCounter(), sbToSave.toString()));
     }
 
 

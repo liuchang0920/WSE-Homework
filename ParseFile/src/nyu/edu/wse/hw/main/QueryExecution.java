@@ -1,19 +1,40 @@
 package nyu.edu.wse.hw.main;
 
+import com.google.gson.JsonObject;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 import nyu.edu.wse.hw.domain.*;
 import nyu.edu.wse.hw.util.ArrayConverter;
+import nyu.edu.wse.hw.util.BM25Calculator;
 import nyu.edu.wse.hw.util.VariableByteCode;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.net.InetSocketAddress;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class QueryExecution {
 
-    private static final String INVERTED_FILE="inverted.txt";
+
+    // query handler inner class
+    private static class QueryHandle implements HttpHandler{
+
+        @Override
+        public void handle(HttpExchange httpExchange) throws IOException {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("testint", 1);
+            jsonObject.addProperty("teststring", "200");
+            String res = jsonObject.toString();
+            httpExchange.sendResponseHeaders(200, res.length());
+            OutputStream os = httpExchange.getResponseBody();
+            os.write(res.getBytes());
+            os.close();
+        }
+    }
+
+    private static final String INVERTED_FILE="inverted.out";
     private static final String INVERTED_FILE_PATH = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-index/";
     //private static final String INVERTED_FILE_PATH = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-index/";
 
@@ -31,6 +52,9 @@ public class QueryExecution {
     // number of posting per chunk
     private static final int NUM_OF_POSTING = 500;
 
+    // bm25 calculator
+    BM25Calculator calculator = new BM25Calculator();
+
     // logging
     private static final Logger log = Logger.getLogger("QueryExecution");
 
@@ -38,14 +62,21 @@ public class QueryExecution {
     public static void main(String[] args) {
 
         QueryExecution execution = new QueryExecution();
-        execution.query(null);
+        List<String> test = new ArrayList<>();
+        test.add("fast");
+        test.add("food");
+        execution.query(test);
 
-        /*
-        while(true) {
-            // handle request
-        }
-         */
-
+        // start backend server
+//        try{
+//
+//            HttpServer server = HttpServer.create(new InetSocketAddress(8888), 0);
+//            server.createContext("/query", new QueryHandle());
+//            server.setExecutor(null);
+//            server.start();
+//        } catch (IOException ioe) {
+//            log.log(Level.SEVERE, "error creating http server");
+//        }
     }
 
     public QueryExecution() {
@@ -81,6 +112,7 @@ public class QueryExecution {
                     log.log(Level.SEVERE, "unexpected exception"+e.getMessage());
                     log.log(Level.SEVERE, e.getCause()+"");
                 }
+
                 line = br.readLine();
             }
 
@@ -107,33 +139,44 @@ public class QueryExecution {
 
     public List<QueryResult> query(List<String> keywords) {
 
-        String temp = "build";
-        TermInformation termInformation = openList(temp);
+//        String temp = "Wstrz";
+//        TermInformation termInformation = openList(temp);
 
-//        List<QueryResult> result = new ArrayList<>();
-//
-//        // implement DAAT
-//        List<RandomAccessFile> lp = new ArrayList<>();
+        Queue<QueryResult> result = new PriorityQueue<>(new Comparator<QueryResult>() {
+            @Override
+            public int compare(QueryResult o1, QueryResult o2) {
+                return 0;
+            }
+        });
+
+        // implement DAAT
+//        List<TermInformation> lp = new ArrayList<>();
 //        for(String keyword: keywords) {
 //            lp.add(openList(keyword));
 //        }
 //
 //        DocFrequency did = new DocFrequency(-1, 0);
 //        List<DocFrequency> frequencies;
-//        // document id ??
-//        while(did.getDocId() <= Integer.MAX_VALUE) {
+//
+//        while(did.getDocId() <= Integer.MAX_VALUE) { // 记录docid最大值
 //
 //            frequencies = new ArrayList<>();
 //            did = nextGEQ(lp.get(0), did.getDocId());
 //            frequencies.add(did);
 //            int tempDoc = did.getDocId();
-//            for(int i=0;i<lp.size();i++) {
+//            for(int i=1;i<lp.size();i++) {// start from index=1
 //                DocFrequency tempDocFreq = nextGEQ(lp.get(i), did.getDocId());
 //                frequencies.add(tempDocFreq);
 //                tempDoc = Math.max(did.getDocId(), tempDocFreq.getDocId());
 //            }
+//
 //            if(tempDoc == did.getDocId()) {
-//                // BM25 compute frequency
+//                // BM25Calculator compute frequency
+//
+//                Query query = new Query(new ArrayList<>(), 10);
+//
+//                calculator.calculate(query);
+//                System.out.println("calculate bm25");
 //
 //                did.setDocId(did.getDocId()+1);
 //            } else {
@@ -143,28 +186,13 @@ public class QueryExecution {
 //
 //
 //        // close list
-//        for(RandomAccessFile file: lp) {
-//            closeList(file);
+//        for(TermInformation termInfo: lp) {
+//            closeList(termInfo.getRandomAccessFile());
 //        }
-//
+
 //        return result;
           return null;
     }
-
-    // provide interface for the index in the inverted file given a keyword
-//    public RandomAccessFile openList(String keyword) {
-//            try{
-//                LexiconItem lexiconItem = lexicon.getWordInfo(keyword);
-//                File file = new File(this.INVERTED_FILE_PATH+this.INVERTED_FILE);
-//                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
-//                randomAccessFile.seek(lexiconItem.getStartIndex());
-//                return randomAccessFile;
-//            } catch (IOException ioe) {
-//                log.log(Level.SEVERE, "ioexception while searching for keyword: " + keyword);
-//                return null;
-//
-//            }
-//    }
 
     public boolean closeList(RandomAccessFile raf) {
         try{
@@ -175,8 +203,44 @@ public class QueryExecution {
         }
     }
 
-    public DocFrequency nextGEQ(RandomAccessFile raf, int docId) {
-        // uncompress in here ??
+    public DocFrequency nextGEQ(TermInformation termInformation, int docId) {
+
+        int[] aTable = termInformation.getAuxiliaryTable();// (last docId, chunkSize);
+        int i=termInformation.getCurIndex();
+        int jumpBlock = 0;
+
+        while(aTable[i]<docId && i<aTable.length) {
+            i += 2;
+            termInformation.setCurIndex(i);
+            jumpBlock += aTable[i+1];
+        }
+        if(i>aTable.length) {
+            System.out.println("end of search");
+        } else {
+            // read block
+            int chunkSize = aTable[i+1];
+            try{
+                termInformation.getRandomAccessFile().seek(termInformation.getStartIndex()+jumpBlock);
+                byte[] compressedChunk = new byte[chunkSize];
+                termInformation.getRandomAccessFile().read(compressedChunk);
+                List<Integer> uncompressedChunk = VariableByteCode.decode(compressedChunk);
+
+                // try to find the exact doc id
+                for(int index=0;index<uncompressedChunk.size();index+=2) {
+                        if(index == docId) {
+                            System.out.println("find docId");
+                            return new DocFrequency(uncompressedChunk.get(index), uncompressedChunk.get(i+1));
+                        } else {
+                            System.out.println("did not found docId: "+ docId);
+                            return new DocFrequency(uncompressedChunk.get(index), -1);
+                        }
+                }
+                return null;
+            } catch (IOException ioe) {
+                log.log(Level.SEVERE, "error while uncompressing chunk");
+            }
+        }
+        System.out.println("error retrieving docId");
         return null;
     }
 
@@ -185,7 +249,7 @@ public class QueryExecution {
     }
 
     private TermInformation openList(String keyword) {
-        // seek its auxiliar table
+        // seek its auxiliary table
         if(this.lexicon.contains(keyword)) {
             try{
                 File file = new File(this.INVERTED_FILE_PATH+this.INVERTED_FILE);
@@ -201,9 +265,9 @@ public class QueryExecution {
                 byte[] auxiliaryBytes = new byte[chunk*2*4];// 1 int --> 4 byte, 2 for (last docId, chunk size)
                 raf.read(auxiliaryBytes);
                 int[] auxiliaryTable = ArrayConverter.toIntArray(auxiliaryBytes);
-                for(int item: auxiliaryTable) {
-                    System.out.println(item);
-                }
+//                for(int item: auxiliaryTable) {
+//                    System.out.println(item);
+//                }
                 return new TermInformation(raf, auxiliaryTable);
             } catch (IOException ioe) {
                 log.log(Level.SEVERE, "error retrieving meta for term: " + keyword);

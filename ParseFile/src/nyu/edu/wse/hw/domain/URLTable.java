@@ -33,4 +33,8 @@ public class URLTable implements Serializable{
     public int getSize() {
         return map.size();
     }
+
+    public HashMap<Integer, URLTableItem> getMap() {
+        return map;
+    }
 }

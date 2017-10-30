@@ -6,10 +6,14 @@ public class TermInformation {
 
     RandomAccessFile randomAccessFile;
     int[] auxiliaryTable;
+    int curIndex;
+    long startIndex;
 
     public TermInformation(RandomAccessFile randomAccessFile, int[] auxiliaryTable) {
         this.randomAccessFile = randomAccessFile;
         this.auxiliaryTable = auxiliaryTable;
+        this.curIndex = 0;
+
     }
 
     public RandomAccessFile getRandomAccessFile() {
@@ -18,5 +22,21 @@ public class TermInformation {
 
     public int[] getAuxiliaryTable() {
         return auxiliaryTable;
+    }
+
+    public int getCurIndex() {
+        return curIndex;
+    }
+
+    public void setCurIndex(int curIndex) {
+        this.curIndex = curIndex;
+    }
+
+    public long getStartIndex() {
+        return startIndex;
+    }
+
+    public void setStartIndex(long startIndex) {
+        this.startIndex = startIndex;
     }
 }

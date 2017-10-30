@@ -20,4 +20,8 @@ public class URLTableItem implements Serializable{
     public String toString() {
         return "{" + this.docID + ", " + this.url + ", " + this.size + "}";
     }
+
+    public int getSize() {
+        return size;
+    }
 }

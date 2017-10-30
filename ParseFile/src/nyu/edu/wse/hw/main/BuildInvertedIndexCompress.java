@@ -20,7 +20,7 @@ public class BuildInvertedIndexCompress {
     private static final String INTERMEDIATE_FILE_PATH = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-intermediate/";
     //private static final String INTERMEDIATE_FILE_PATH = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-intermediate/";
 
-    private static final String INVERTED_FILE="inverted.txt";
+    private static final String INVERTED_FILE="inverted.out";
     private static final String INVERTED_FILE_PATH = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-index/";
     //private static final String INVERTED_FILE_PATH = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-index/";
 
@@ -30,7 +30,7 @@ public class BuildInvertedIndexCompress {
 
     // indexes
     private long startIndex = 0;// off set by byte
-    private long endIndex = -1;
+    private long endIndex = 0;
 
     // number of posting per chunk
     private static final int NUM_OF_POSTING = 500;
@@ -166,14 +166,13 @@ public class BuildInvertedIndexCompress {
             byte[] auxiliaryBytes = ArrayConverter.toByteArray(auxiliaryList.stream().mapToInt(i -> i).toArray());
             fos.write(auxiliaryBytes);
             endIndex += auxiliaryBytes.length;
-            if(auxiliaryBytes.length>160) {
-                System.out.println("auxiliary size: " + auxiliaryBytes.length/8);
-            }
+//            if(auxiliaryBytes.length>160) {
+//                System.out.println("auxiliary size: " + auxiliaryBytes.length/8);
+//            }
             // save invertedList
             for(byte[] tempCompressed: invertedListToSave) {
                 fos.write(tempCompressed);
                 endIndex += tempCompressed.length;
-
             }
 
             // update index
