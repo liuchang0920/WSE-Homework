@@ -1,0 +1,10 @@
+# used for ParseWetFileConfig
+URLTable_FILE=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/urltable/URLTable.txt
+WET_FILE_FOLDER=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/wet-files/
+INTERMEDIATE_FILE=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-intermediate/temp.txt
+INTERMEDIATE_FILE_SORTED=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-intermediate/temp-sort.txt
+SNAPHOT_PATH=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/snapshot/
+BM25_CONFIG_FILE=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/bm25-config
+INVERTED_FILE=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-index/inverted.out
+LEXICON_FILE=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/lexicon/lexicon.out
+

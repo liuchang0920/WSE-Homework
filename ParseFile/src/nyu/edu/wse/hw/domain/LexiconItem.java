@@ -4,32 +4,17 @@ import java.io.Serializable;
 
 public class LexiconItem implements Serializable {
 
-    static final long serialVersionUID = 111L;
-    // indicate postiion in inverted list ?? need modification
-    long startIndex;
-    long endIndex; // off sets ??
-
-    //private int wordId;
+    private static final long serialVersionUID = 111L;
+    // indicate postiion in inverted list
+    private long startIndex;
+    private long endIndex;
     private int count;
 
     public LexiconItem(int count, long startIndex, long endIndex) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
-        //this.wordId = wordId;
         this.count = count;
     }
-
-    public void addOne() {
-        this.count++;
-    }
-
-//    public int getWordId() {
-//        return wordId;
-//    }
-//
-//    public void setWordId(int wordId) {
-//        this.wordId = wordId;
-//    }
 
     public int getCount() {
         return count;
@@ -49,9 +34,5 @@ public class LexiconItem implements Serializable {
 
     public long getEndIndex() {
         return endIndex;
-    }
-
-    public void setEndIndex(long endIndex) {
-        this.endIndex = endIndex;
     }
 }

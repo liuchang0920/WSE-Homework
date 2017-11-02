@@ -12,10 +12,10 @@ public class BM25Calculator {
 
     private static final double k1 = 1.2;
     private static final double b = 0.75;
+    public static final String BM25_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/bm25-config";
 
-    private static int N;
-    private static double AVG;
-    private static final String BM25_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/bm25-config/bm25-config";
+    private int N;
+    private double AVG;
 
     public BM25Calculator() {
         Properties prop = new Properties();
@@ -26,14 +26,14 @@ public class BM25Calculator {
             prop.load(is);
             N = Integer.parseInt(prop.getProperty("total"));
             AVG = Double.parseDouble(prop.getProperty("avg"));
-            System.out.println("sucessfully load params");
+            System.out.println("sucessfully load params, bm25");
         } catch (IOException ioe) {
-            System.out.println("error loading params");
+            System.out.println("error loading params: " + ioe);
         }
 
     }
 
-    public static double calculate(Query query) {
+    public double calculate(Query query) {
         double result = 0;
         for(QueryItem q: query.getItem()) {
             result += calculate(q.getFt(), q.getFdt(), query.getD());
@@ -42,7 +42,7 @@ public class BM25Calculator {
         return result;
     }
 
-    private static double calculate(int ft, int fdt, int d) {
+    private double calculate(int ft, int fdt, int d) {
         double result = 0;
 
         double K = k1 * ((1-b) + b * (d/AVG));

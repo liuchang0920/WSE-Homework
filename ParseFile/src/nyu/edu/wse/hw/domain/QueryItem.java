@@ -23,4 +23,13 @@ public class QueryItem {
     public int getFdt() {
         return fdt;
     }
+
+    @Override
+    public String toString() {
+        return "QueryItem{" +
+                "query='" + query + '\'' +
+                ", ft=" + ft +
+                ", fdt=" + fdt +
+                '}';
+    }
 }

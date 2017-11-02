@@ -9,6 +9,7 @@ import nyu.edu.wse.hw.util.VariableByteCode;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,17 +17,11 @@ public class BuildInvertedIndexCompress {
 
     private static Lexicon lexicon = new Lexicon();
 
-    private static final String INTERMEDIATE_FILE="temp-sort.txt";
-    private static final String INTERMEDIATE_FILE_PATH = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-intermediate/";
-    //private static final String INTERMEDIATE_FILE_PATH = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-intermediate/";
+    private static  String INTERMEDIATE_FILE_SORTED;
 
-    private static final String INVERTED_FILE="inverted.out";
-    private static final String INVERTED_FILE_PATH = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-index/";
-    //private static final String INVERTED_FILE_PATH = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-index/";
+    private static  String INVERTED_FILE;
 
-    private static final String LEXICON_FILE="lexicon.out";
-    private static final String LEXICON_FILE_PATH = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/lexicon/";
-    //private static final String LEXICON_FILE_PATH =  "/media/liuchang/New Volume/study/wse/hw2-data/lexicon/";
+    private static String LEXICON_FILE;
 
     // indexes
     private long startIndex = 0;// off set by byte
@@ -35,24 +30,51 @@ public class BuildInvertedIndexCompress {
     // number of posting per chunk
     private static final int NUM_OF_POSTING = 500;
 
+    // config file
+    private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config";;
     // logging
     private static final Logger log = Logger.getLogger("buildInvertedIndex");
 
     public static void main(String[] args) throws ClassNotFoundException, FileNotFoundException, IOException {
 
-        log.info("start building");
-        // build inverted index
         BuildInvertedIndexCompress buildInverted = new BuildInvertedIndexCompress();
-        buildInverted.parseSortedFile();
+        buildInverted.main();
+    }
 
-        // build lexicon
-        buildInverted.writeLexiconToFile(LEXICON_FILE_PATH, LEXICON_FILE);
-        log.info("finish parsing");
+    public void main() {
+        try{
+            log.info("start building");
+            parseSortedFile();
+            System.out.println("lexicong file: " + LEXICON_FILE);
+            writeLexiconToFile(LEXICON_FILE);
+            log.info("finish parsing");
+        } catch (IOException ioe) {
+            System.out.println("io exception");
+        }
+
+    }
+    public BuildInvertedIndexCompress() {
+
+        Properties prop = new Properties();
+        InputStream is;
+        try {
+            is = new FileInputStream(COMMON_CONFIG_FILE);
+            prop.load(is);
+
+            this.INTERMEDIATE_FILE_SORTED = prop.getProperty("INTERMEDIATE_FILE_SORTED");
+            this.INVERTED_FILE = prop.getProperty("INVERTED_FILE");
+            this.LEXICON_FILE = prop.getProperty("LEXICON_FILE");
+
+            //System.out.println("finish loading params");
+        } catch (IOException ioe) {
+            System.out.println("error while parsing config file: " + ioe.getMessage());
+        }
+
     }
 
     public void parseSortedFile() throws IOException{
-        System.out.println("start parsing: " + INTERMEDIATE_FILE);
-        FileReader fileReader = new FileReader(INTERMEDIATE_FILE_PATH+INTERMEDIATE_FILE);
+        //System.out.println("start parsing: " + INTERMEDIATE_FILE);
+        FileReader fileReader = new FileReader(INTERMEDIATE_FILE_SORTED);
         BufferedReader br = new BufferedReader(fileReader);
         String line;
 
@@ -61,7 +83,7 @@ public class BuildInvertedIndexCompress {
         List<DocFrequency> curList = new ArrayList<>();
 
         // output file
-        FileOutputStream fos = new FileOutputStream(INVERTED_FILE_PATH+INVERTED_FILE, false);
+        FileOutputStream fos = new FileOutputStream(INVERTED_FILE, false);
         int count = 0;
         while((line = br.readLine()) != null) {
             String[] split = line.split("\t");
@@ -76,11 +98,10 @@ public class BuildInvertedIndexCompress {
                 }
 
                 count += 1;
-
+                System.out.println("cur word: " + cur);
                 // save inverted index
+                //saveInvertedIndex(curList, fos);
                 saveInvertedIndex(curList, fos);
-
-                // System.out.println("finish building: " + cur);
                 // update lexicon file
                 lexicon.addWord(cur, new LexiconItem(curList.size(), startIndex, endIndex-1));
 
@@ -90,28 +111,28 @@ public class BuildInvertedIndexCompress {
                 curList.add(new DocFrequency(Integer.parseInt(split[1]), Integer.parseInt(split[2])));
 
                 // update offset
-                startIndex = endIndex;// 难道是这里？
+                startIndex = endIndex;
 
             }
         }
         // close
         fos.close();
-        System.out.println("finish parsing: "+INTERMEDIATE_FILE);
+        //System.out.println("finish parsing: "+INTERMEDIATE_FILE);
     }
 
     // write lexicon to file
-    public void writeLexiconToFile(String lexiconFilePath, String lexiconFile) throws IOException{
+    public void writeLexiconToFile(String lexiconFile) throws IOException{
         // 直接写到文件
         // lexicon file
-        FileOutputStream fout= new FileOutputStream(lexiconFilePath+lexiconFile, false);
+        FileOutputStream fout= new FileOutputStream(lexiconFile, false);
         log.info("lexion size: " + lexicon.getMap().size());
 
         lexicon.getMap().forEach((k, v) -> {
             StringBuffer sb = new StringBuffer();
-            sb.append(k+ "::");
+            sb.append(k+ " ");
             //sb.append(v.getWordId()+"::");
-            sb.append(v.getCount()+"::");
-            sb.append(v.getStartIndex()+"::");
+            sb.append(v.getCount()+" ");
+            sb.append(v.getStartIndex()+" ");
             sb.append(v.getEndIndex()+"\n");
             try{
                 fout.write(sb.toString().getBytes());
@@ -135,14 +156,9 @@ public class BuildInvertedIndexCompress {
         for(int i=0;i<curList.size();i++) {
 
             tempListToSave.add(curList.get(i).getDocId());
-            tempListToSave.add(curList.get(i).getFequency());
-
-            // compress each NUM_OF_POSTING of postings
-            if(((i+1) % (NUM_OF_POSTING) == 0)) {//save on 499　每５００个存一次, but in pair
-//                if(i>500) {
-//                    System.out.println("create chunk: " + i);
-//                }
-                // compress
+            tempListToSave.add(curList.get(i).getFrequency());
+            // System.out.println("docId: " + curList.get(i).getDocId() + " frequency: " + curList.get(i).getFrequency());
+            if(((i+1) % (NUM_OF_POSTING) == 0)) {
                 byte[] compressedChunk = VariableByteCode.encode(tempListToSave);
                 // record to auxiliary table: (docId, compressed chunk length)
                 auxiliaryList.add(curList.get(i).getDocId());
@@ -161,27 +177,86 @@ public class BuildInvertedIndexCompress {
             auxiliaryList.add(compressedChunk.length);
             invertedListToSave.add(compressedChunk);
         }
+        if(curList.size()>0) {
+            try{
+                byte[] auxiliaryBytes = ArrayConverter.toByteArray(auxiliaryList.stream().mapToInt(i -> i).toArray());
+                System.out.println("auxiliary size: " + auxiliaryBytes.length);
+                System.out.println("auliary value: " + auxiliaryList);
+                fos.write(auxiliaryBytes);
+                endIndex += auxiliaryBytes.length;
 
-        try{
-            byte[] auxiliaryBytes = ArrayConverter.toByteArray(auxiliaryList.stream().mapToInt(i -> i).toArray());
-            fos.write(auxiliaryBytes);
-            endIndex += auxiliaryBytes.length;
-//            if(auxiliaryBytes.length>160) {
-//                System.out.println("auxiliary size: " + auxiliaryBytes.length/8);
-//            }
-            // save invertedList
-            for(byte[] tempCompressed: invertedListToSave) {
-                fos.write(tempCompressed);
-                endIndex += tempCompressed.length;
+                // save invertedList
+                for(byte[] tempCompressed: invertedListToSave) {
+                    fos.write(tempCompressed);
+                    endIndex += tempCompressed.length;
+                }
+                // endIndex already updated
+
+            } catch (IOException ioe) {
+                log.log(Level.SEVERE, "error while writing to inverted file: " + ioe.getMessage());
             }
-
-            // update index
-            //log.log(Level.INFO, "update endIndex");
-
-
-        } catch (IOException ioe) {
-            log.log(Level.SEVERE, "error while writing to inverted file: " + ioe.getMessage());
         }
     }
+
+    // ascii for testing
+
+//    private void saveInvertedIndexAscii(List<DocFrequency> curList, String curWord) throws IOException{
+//
+//
+//        List<Integer> auxiliaryList = new ArrayList<>();
+//        List<Integer> invertedListToSave = new ArrayList<>();
+//        List<Integer> tempListToSave = new ArrayList<>();
+//
+//        PrintWriter writer = new PrintWriter("/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/inverted-index/inverted-ascii.out", "UTF-8");
+//        // write auxiliary list
+//        for(int i=0;i<curList.size();i++) {
+//
+//            tempListToSave.add(curList.get(i).getDocId());
+//            tempListToSave.add(curList.get(i).getFrequency());
+//
+//            if(((i+1) % (NUM_OF_POSTING) == 0)) {
+//
+//                auxiliaryList.add(curList.get(i).getDocId());
+//                auxiliaryList.add(tempListToSave.size());
+//                // save compressed files in this chunk to list
+//                invertedListToSave.addAll(tempListToSave);
+//
+//                tempListToSave = new ArrayList<>();
+//            }
+//        }
+//        // check if tempListToSave is empty, otherwise use another chunk to save rest files
+//        if(tempListToSave.size()>0) {
+//            //System.out.println("leftover: " + tempListToSave.size()/2);
+//            auxiliaryList.add(curList.get(curList.size()-1).getDocId());// last docid in this chunk
+//            auxiliaryList.add(tempListToSave.size());
+//            invertedListToSave.addAll(tempListToSave);
+//        }
+//
+//        try{
+//            // 这里可能有问题
+////            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+////            ObjectOutputStream oos = new ObjectOutputStream(bos);
+////            oos.writeObject(auxiliaryList);
+//            // byte[] auxiliaryBytes = bos.toByteArray();
+//            writer.write(auxiliaryBytes);
+//            endIndex += auxiliaryBytes.length;
+//
+//            // save invertedList
+//            ByteArrayOutputStream bos2 = new ByteArrayOutputStream();
+//            ObjectOutputStream oos2 = new ObjectOutputStream(bos2);
+//            oos2.writeObject(invertedListToSave);
+//            byte[] invertedListBytes = bos2.toByteArray();
+//            endIndex += invertedListBytes.length;
+//            fos.write(invertedListBytes);
+////            for(int tempCompressed: invertedListToSave) {
+////                fos.write(tempCompressed);
+////                endIndex += tempCompressed.length;
+////            }
+//            // endIndex already updated
+//
+//        } catch (IOException ioe) {
+//            log.log(Level.SEVERE, "error while writing to inverted file: " + ioe.getMessage());
+//        }
+//    }
 
 }

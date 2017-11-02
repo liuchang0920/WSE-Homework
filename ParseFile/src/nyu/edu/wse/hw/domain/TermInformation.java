@@ -7,7 +7,7 @@ public class TermInformation {
     RandomAccessFile randomAccessFile;
     int[] auxiliaryTable;
     int curIndex;
-    long startIndex;
+    long startIndex;// minus the auxiliary part
 
     public TermInformation(RandomAccessFile randomAccessFile, int[] auxiliaryTable) {
         this.randomAccessFile = randomAccessFile;

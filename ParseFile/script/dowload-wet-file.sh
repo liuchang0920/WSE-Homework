@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
 
 # fetch first 100 lines
-i = 0
-while read line; do
-    echo $line
-done <"../data/wet-list/wet.paths"
+wget https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-39/segments/1505818685129.23/wet/CC-MAIN-20170919112242-20170919132242-00{052..120}.warc.wet.gz

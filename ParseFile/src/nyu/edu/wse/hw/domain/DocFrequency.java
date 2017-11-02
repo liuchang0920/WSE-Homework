@@ -3,11 +3,11 @@ package nyu.edu.wse.hw.domain;
 public class DocFrequency {
 
     int docId;
-    int fequency;
+    int frequency;
 
-    public DocFrequency(int docId, int fequency) {
+    public DocFrequency(int docId, int frequency) {
         this.docId = docId;
-        this.fequency = fequency;
+        this.frequency = frequency;
     }
 
     public int getDocId() {
@@ -18,11 +18,11 @@ public class DocFrequency {
         this.docId = docId;
     }
 
-    public int getFequency() {
-        return fequency;
+    public int getFrequency() {
+        return frequency;
     }
 
     public void setFequency(int fequency) {
-        this.fequency = fequency;
+        this.frequency = fequency;
     }
 }
