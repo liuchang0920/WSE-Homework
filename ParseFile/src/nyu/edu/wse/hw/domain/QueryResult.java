@@ -5,6 +5,7 @@ public class QueryResult {
     private int docId;
     private double bm25Value;
     private String snippet;
+    private String url;
 
     public QueryResult(int docId, double bm25Value) {
         this.docId = docId;
@@ -27,12 +28,21 @@ public class QueryResult {
         this.snippet = snippet;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     @Override
     public String toString() {
         return "QueryResult{" +
                 "docId=" + docId +
                 ", bm25Value=" + bm25Value +
                 ", snippet='" + snippet + '\'' +
+                ", url='" + url + '\'' +
                 '}';
     }
 }

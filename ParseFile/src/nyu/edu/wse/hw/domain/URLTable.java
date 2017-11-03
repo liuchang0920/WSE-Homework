@@ -37,4 +37,8 @@ public class URLTable implements Serializable{
     public HashMap<Integer, URLTableItem> getMap() {
         return map;
     }
+
+    public String getUrl(int docId) {
+        return map.get(docId).getUrl();
+    }
 }

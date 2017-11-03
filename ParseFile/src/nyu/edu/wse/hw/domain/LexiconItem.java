@@ -35,4 +35,13 @@ public class LexiconItem implements Serializable {
     public long getEndIndex() {
         return endIndex;
     }
+
+    @Override
+    public String toString() {
+        return "LexiconItem{" +
+                "startIndex=" + startIndex +
+                ", endIndex=" + endIndex +
+                ", count=" + count +
+                '}';
+    }
 }

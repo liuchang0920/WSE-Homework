@@ -8,6 +8,7 @@ public class TermInformation {
     int[] auxiliaryTable;
     int curIndex;
     long startIndex;// minus the auxiliary part
+    int curJump;
 
     public TermInformation(RandomAccessFile randomAccessFile, int[] auxiliaryTable) {
         this.randomAccessFile = randomAccessFile;
@@ -38,5 +39,13 @@ public class TermInformation {
 
     public void setStartIndex(long startIndex) {
         this.startIndex = startIndex;
+    }
+
+    public int getCurJump() {
+        return curJump;
+    }
+
+    public void setCurJump(int curJump) {
+        this.curJump = curJump;
     }
 }

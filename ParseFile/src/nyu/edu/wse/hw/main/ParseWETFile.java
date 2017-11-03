@@ -43,7 +43,6 @@ public class ParseWETFile {
     // logging
     private static final Logger log = Logger.getLogger("parseWETFilelogger");
 
-
     // constructor
     public ParseWETFile() {
         // add config files
@@ -93,7 +92,7 @@ public class ParseWETFile {
 
             for(String fn: fileNames) {
                 System.out.println("parsing: " + fn);
-                List<String> pages = readFile(WET_FILE_FOLDER+fn, GZipReader.GZIP_UTF_8);
+                List<String> pages = readFile(WET_FILE_FOLDER+fn, GZipReader.GZIP_UTF_8);// list of pages in one wet file
                 for(String page: pages) {
                     parseByFile(page, out);
                 }
@@ -191,7 +190,8 @@ public class ParseWETFile {
         urlTable.addURL(url, wordCounter);
 
         // generate snapshot
-        this.snapshotService.execute(new SnapShotWriter(SNAPHOT_PATH, this.urlTable.getCounter(), sbToSave.toString()));
+        int curDocId = this.urlTable.getCounter()-1;
+        this.snapshotService.execute(new SnapShotWriter(SNAPHOT_PATH, curDocId, sbToSave.toString()));
     }
 
 

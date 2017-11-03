@@ -21,7 +21,7 @@ public class QueryHandler implements HttpHandler {
     private static String INVERTED_FILE;
     private static String LEXICON_FILE;
     private static String URLTable_FILE; // = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/urltable/URLTable.txt";
-
+    private static int MAX_RESULT = 20;
     // number of posting per chunk
     private static final int NUM_OF_POSTING = 500;
 
@@ -93,7 +93,9 @@ public class QueryHandler implements HttpHandler {
                             endIndex
                     );
                     lexicon.addWord(word, litem);
-
+                    if("__".equals(word)) {
+                        System.out.println("lexicon information: " + litem);
+                    }
                 } catch (Exception e) {
                     log.log(Level.SEVERE, "unexpected exception"+e.getMessage());
                     log.log(Level.SEVERE, e.getCause()+"");
@@ -125,76 +127,87 @@ public class QueryHandler implements HttpHandler {
         }
     }
 
-    public Queue<QueryResult> query(Set<String> keywords) {
+    public Queue<QueryResult> query(List<String> keywords) {
 
-//        Queue<QueryResult> result = new PriorityQueue<>(new Comparator<QueryResult>() {
-//            @Override
-//            public int compare(QueryResult o1, QueryResult o2) {
-//                return (int)(o2.getBm25Value() - o1.getBm25Value());
-//            }
-//        });
-//
-//        // implement DAAT
+        Queue<QueryResult> result = new PriorityQueue<>(new Comparator<QueryResult>() {
+            @Override
+            public int compare(QueryResult o1, QueryResult o2) {
+                return (int)(o2.getBm25Value() - o1.getBm25Value());
+            }
+        });
+
+        // implement DAAT
         List<TermInformation> lp = new ArrayList<>();
         for(String keyword: keywords) {
             lp.add(openList(keyword));
         }
-//
-//        DocFrequency did = new DocFrequency(-1, 0);
-//        List<DocFrequency> frequencies;
-//
-//        while(did.getDocId() < maxDoc) { // 记录docid最大值
-//            System.out.println("current search did: " + did.getDocId());
-//            frequencies = new ArrayList<>();
-//            did = nextGEQ(lp.get(0), did.getDocId()); // start pair
-//            frequencies.add(did);
-//            int tempDoc = did.getDocId();
-//            for(int i=1;i<lp.size();i++) {// start from index=1
-//                DocFrequency tempDocFreq = nextGEQ(lp.get(i), did.getDocId());
-//                frequencies.add(tempDocFreq);
-//                if(tempDocFreq.getDocId()>did.getDocId()) {
-//                    // did.setDocId(tempDocFreq.getDocId());
-//                    tempDoc = tempDocFreq.getDocId();
-//                    break;
-//                }
-//            }
-//
-//            if(tempDoc == did.getDocId()) {
-//                if(tempDoc > maxDoc) {
-//                     System.out.println("end of search list");
-//                } else {
-//                    // BM25Calculator compute frequency
-//                    // System.out.println("docId: " + tempDoc);
-//
-//                    // build query to compute bm25
-//                    List<QueryItem> items = new ArrayList<>();
-//                    for(int i=0;i<keywords.size();i++) {
-//                        QueryItem item = new QueryItem(keywords.get(i),
-//                                lexicon.getWordInfo(keywords.get(i)).getCount(), frequencies.get(i).getFrequency());    // query, ft, fdt
-//                        items.add(item);
-//                    }
-//                    System.out.println("cur docid: " + did.getDocId());
-//                    System.out.println(items.toString());
-//
-//                    Query query = new Query(items, urlTable.getMap().get(did.getDocId()).getSize());
-//
-//                    calculator.calculate(query);
-//                    // System.out.println("calculate bm25");
-//
-//                    did.setDocId(did.getDocId()+1);
-//                }
-//
-//            } else {
-//                did.setDocId(tempDoc);// docid and frequency not compatible
-//            }
-//        }
-//
-//        // close list
-//        for(TermInformation termInfo: lp) {
-//            closeList(termInfo.getRandomAccessFile());
-//        }
 
-        return null;
+        DocFrequency did = new DocFrequency(-1, 0);
+        List<DocFrequency> frequencies;
+        int lastDocId = -2;
+        while(did.getDocId() < maxDoc) { // 记录docid最大值
+
+            if(lastDocId == did.getDocId()) {
+                System.out.println("same id...");
+                break;
+            }
+            lastDocId = did.getDocId();
+
+            System.out.println("current search did: " + did.getDocId());
+            frequencies = new ArrayList<>();
+            did = nextGEQ(lp.get(0), did.getDocId()); // start pair
+            frequencies.add(did);
+            int tempDoc = did.getDocId();
+            for(int i=1;i<lp.size();i++) {// start from index=1
+                DocFrequency tempDocFreq = nextGEQ(lp.get(i), did.getDocId());
+                frequencies.add(tempDocFreq);
+                if(tempDocFreq.getDocId()>did.getDocId()) {
+                    // did.setDocId(tempDocFreq.getDocId());
+                    tempDoc = tempDocFreq.getDocId();
+                    break;
+                }
+            }
+
+            if(tempDoc == did.getDocId()) {
+                if(tempDoc > maxDoc) {
+                     System.out.println("end of search list");
+                     break;
+                } else {
+
+                    List<QueryItem> items = new ArrayList<>();
+                    for(int i=0;i<keywords.size();i++) {
+                        QueryItem item = new QueryItem(keywords.get(i),
+                                lexicon.getWordInfo(keywords.get(i)).getCount(), frequencies.get(i).getFrequency());    // query, ft, fdt
+                        items.add(item);
+                    }
+
+                    Query query = new Query(items, urlTable.getMap().get(did.getDocId()).getSize());
+                    double bm25 = calculator.calculate(query);
+                    result.add(new QueryResult(did.getDocId(), bm25));
+
+                    did.setDocId(did.getDocId()+1);
+                }
+
+            } else {
+                if(tempDoc == did.getDocId()) {
+                    System.out.println("break...");
+                }
+                System.out.println("update docId:" + tempDoc);
+                did.setDocId(tempDoc);// docid and frequency not compatible
+            }
+
+        }
+        System.out.println("finish daat....");
+        // close list
+        for(TermInformation termInfo: lp) {
+            closeList(termInfo.getRandomAccessFile());
+        }
+
+        System.out.println("current result size: " + result.size());
+        while(result.size()>MAX_RESULT) {
+            result.poll();
+        }
+        return result;
     }
 
     public boolean closeList(RandomAccessFile raf) {
@@ -210,9 +223,9 @@ public class QueryHandler implements HttpHandler {
         // get the first docId that is >= docId, if the max < docID: return maxDoc+1
         int[] auxiliarTable = termInformation.getAuxiliaryTable();
 
-        int curIndex = termInformation.getCurIndex();// first chunk
+        int curIndex = 0;// first chunk
         int curLastDocId = auxiliarTable[curIndex];// (last docId, chunksize)
-        int jumpSize = auxiliarTable.length*8;// skip the size of the auxiliary table (docId, chunksize) pair, skip how many ?
+        int jumpSize = auxiliarTable.length*4;// skip the size of the auxiliary table (docId, chunksize) pair, skip how many ?
         while(curLastDocId<docId) {
             jumpSize += auxiliarTable[curIndex+1]; // skip compressed chunk
 
@@ -223,7 +236,9 @@ public class QueryHandler implements HttpHandler {
             // update curLastDocId
             curLastDocId = auxiliarTable[curIndex];
         }
-        if(curIndex>=auxiliarTable.length-1) {
+        System.out.println("auxiliary size: " + auxiliarTable.length);
+        System.out.println("jump size: " + jumpSize);
+        if(curIndex>=auxiliarTable.length-2) {
             return new DocFrequency(maxDoc+1, -1);
         }
         // uncompress chunk
@@ -232,25 +247,27 @@ public class QueryHandler implements HttpHandler {
             int chunkSize = auxiliarTable[curIndex+1];
             byte[] compressedChunk = new byte[chunkSize];
             RandomAccessFile randomAccessFile = termInformation.getRandomAccessFile();
-            randomAccessFile.seek(termInformation.getStartIndex()+jumpSize); // minus 1 ?
+            System.out.println("seek: " + (termInformation.getStartIndex()+(long)jumpSize));
+            randomAccessFile.seek(termInformation.getStartIndex()+(long)jumpSize); // minus 1 ?
             randomAccessFile.read(compressedChunk);
             List<Integer> uncompressedChunk = VariableByteCode.decode(compressedChunk);
 
             // try to find the first docId that is larger than docId
-            System.out.println("uncompressed chunk: " + uncompressedChunk);
+            //System.out.println("uncompressed chunk: " + uncompressedChunk);
             int curDocId = uncompressedChunk.get(0);
-
+            System.out.println("uncompressed chunk: " + uncompressedChunk.toString());
             int tempIndex = 0;
             while(curDocId<docId) {
                 // System.out.print("[docId: " + curDocId + ", freq:" + uncompressedChunk.get(tempIndex+1) + "]");
                 tempIndex += 2;
                 if(tempIndex>=uncompressedChunk.size()-2) break;
-                curDocId = uncompressedChunk.get(tempIndex+1);
+                curDocId = uncompressedChunk.get(tempIndex);
             }
             System.out.println();
 
             int findFrequency = uncompressedChunk.get(tempIndex+1);
             //System.out.println("currenct docid is: " + curDocId);
+            System.out.println("find doc, frequency pair: " + curDocId + "," + findFrequency);
             return new DocFrequency(curDocId, findFrequency);
 
         } catch (IOException ioe) {
@@ -277,15 +294,17 @@ public class QueryHandler implements HttpHandler {
 
 
                 byte[] auxiliaryBytes = new byte[chunk*2*4];// 1 int --> 4 byte, 2 for (last docId, chunk size)
-                raf.seek(lexiconItem.getStartIndex()+1);
+                raf.seek(lexiconItem.getStartIndex());
                 raf.read(auxiliaryBytes);
                 int[] auxiliaryTable = ArrayConverter.toIntArray(auxiliaryBytes);
                 System.out.println("auxiliary table");
                 for(int item: auxiliaryTable) {
                     System.out.println(item);
                 }
+
                 TermInformation termInformation = new TermInformation(raf, auxiliaryTable);
                 termInformation.setStartIndex(lexiconItem.getStartIndex());// set start index
+                System.out.println("start index: " + lexiconItem.getStartIndex());
                 termInformation.setCurIndex(0);
                 return termInformation;
 
@@ -310,26 +329,26 @@ public class QueryHandler implements HttpHandler {
         Map<String, String> params = queryToMap(httpExchange.getRequestURI().getQuery());
         String keywords = params.get("keyword");
 
-        Set<String> keywordList = new HashSet<>();
+        List<String> keywordList = new ArrayList<>();
         for(String keyword: keywords.split("\\+")) {
             keywordList.add(keyword);
             //lp.add(openList(keyword));
         }
 
         Queue<QueryResult> queryResults  = query(keywordList);//= new ArrayList<>(); //
-        queryResults.add(new QueryResult(1, 13));
-        queryResults.add(new QueryResult(2, 14));
+//        queryResults.add(new QueryResult(1, 13));
+//        queryResults.add(new QueryResult(2, 14));
 
-        System.out.println("finish query: " + queryResults.size());
+       // System.out.println("finish query: " + queryResults.size());
         List<QueryResult> finalResult = new ArrayList<>();
-        int i=0;
+
         while(queryResults.size()>0) {
-            System.out.println("fetch result...");
             QueryResult cur = queryResults.poll();
-            String snippet = snippetGenerator.getSnippet(cur.getDocId(), keywordList);
+            String snippet = snippetGenerator.getSnippet(cur.getDocId(), new HashSet<>(keywordList));
             cur.setSnippet(snippet);
+            cur.setUrl(urlTable.getUrl(cur.getDocId()));
+
             finalResult.add(cur);
-            i++;
         }
         System.out.println("finish generating snippets");
 
@@ -337,7 +356,7 @@ public class QueryHandler implements HttpHandler {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("result", finalResult.toString());
         String res = jsonObject.toString();
-        httpExchange.sendResponseHeaders(200, res.length());
+        httpExchange.sendResponseHeaders(200, res.getBytes().length);
         OutputStream os = httpExchange.getResponseBody();
         os.write(res.getBytes());
         os.close();
