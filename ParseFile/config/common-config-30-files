@@ -1,0 +1,9 @@
+# used for ParseWetFileConfig
+URLTable_FILE=/media/liuchang/HardDrive/study/wse/hw2-data/urltable/URLTable.txt
+WET_FILE_FOLDER=/media/liuchang/HardDrive/study/wse/hw2-data/sample-data/
+INTERMEDIATE_FILE=/media/liuchang/HardDrive/study/wse/hw2-data/inverted-intermediate/temp.txt
+INTERMEDIATE_FILE_SORTED=/media/liuchang/HardDrive/study/wse/hw2-data/inverted-intermediate/temp-sorted.txt
+SNAPHOT_PATH=/media/liuchang/HardDrive/study/wse/hw2-data/snapshot/
+BM25_CONFIG_FILE=/media/liuchang/HardDrive/study/wse/hw2-data/config/bm25-config-30-files
+INVERTED_FILE=/media/liuchang/HardDrive/study/wse/hw2-data/inverted-index/inverted.out
+LEXICON_FILE=/media/liuchang/HardDrive/study/wse/hw2-data/lexicon/lexicon.out

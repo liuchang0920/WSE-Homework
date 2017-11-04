@@ -17,7 +17,9 @@ import java.util.logging.Logger;
 public class QueryHandler implements HttpHandler {
 
 
-    private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config";
+    //private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config";
+    private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-30-files";
+
     private static String INVERTED_FILE;
     private static String LEXICON_FILE;
     private static String URLTable_FILE; // = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/data/urltable/URLTable.txt";

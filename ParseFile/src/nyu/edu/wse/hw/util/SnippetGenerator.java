@@ -73,26 +73,26 @@ public class SnippetGenerator {
 //        }
 //        return "....";
         for(String keyword: keywords) {
-//            int index = content.indexOf(keyword);
-//            if( index!= -1) {
-//                System.out.println("find keyword: " + keyword);
-//                int startIndex = Math.max(0, index-50);
-//                int endIndex = Math.min(content.length(), index+50);
-//                return content.substring(startIndex, endIndex);
-//            }
+            int index = content.indexOf(keyword);
+            if( index!= -1) {
+                System.out.println("find keyword: " + keyword);
+                int startIndex = Math.max(0, index-50);
+                int endIndex = Math.min(content.length(), index+50);
+                return content.substring(startIndex, endIndex);
+            }
 //            if(content.matches(".*?\\b"+keyword+"\\b.*?") {
 //                // find match
 //
 //            }
-            Pattern pattern = Pattern.compile(".*?\\b"+keyword+"\\b.*?");
-            Matcher matcher = pattern.matcher(content);
-            if(matcher.find()) {
-                // find result
-
-                int startIndex = Math.max(0, matcher.start()-50);
-                int endIndex = Math.min(content.length(), matcher.end());
-                return content.substring(startIndex, endIndex);
-            }
+//            Pattern pattern = Pattern.compile(".*?\\b"+keyword+"\\b.*?");
+//            Matcher matcher = pattern.matcher(content);
+//            if(matcher.find()) {
+//                // find result
+//
+//                int startIndex = Math.max(0, matcher.start()-50);
+//                int endIndex = Math.min(content.length(), matcher.end());
+//                return content.substring(startIndex, endIndex);
+//            }
         }
         return "....";
     }

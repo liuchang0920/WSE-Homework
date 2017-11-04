@@ -21,7 +21,9 @@ public class ParseWETFile {
     private static final String EMPTY_STR = "";
     private static final String URL_PRE_STR = "WARC-Target-URI:";
     private static final Pattern PATTERN = Pattern.compile("[\\w']+");
-    private static final String PARSE_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config";
+    private static final String PARSE_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-30-files";
+    //private static final String PARSE_CONFIG_FILE = "/media/liuchang/HardDrive/study/wse/hw2-data/config/bm25-config-30-files";
+
     //  URL table
     private URLTable urlTable = new URLTable(new HashMap<>());
     private static String URLTable_FILE;
