@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class SnippetGenerator {
 
-    private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config";;
+    private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-80-files";;
     private static final Logger log = Logger.getLogger("QueryExecution");
 
     private String snapshotPath;
@@ -75,7 +75,7 @@ public class SnippetGenerator {
         for(String keyword: keywords) {
             int index = content.indexOf(keyword);
             if( index!= -1) {
-                System.out.println("find keyword: " + keyword);
+                //System.out.println("find keyword: " + keyword);
                 int startIndex = Math.max(0, index-50);
                 int endIndex = Math.min(content.length(), index+50);
                 return content.substring(startIndex, endIndex);

@@ -27,7 +27,7 @@ public class BM25Calculator {
             prop.load(is);
             N = Integer.parseInt(prop.getProperty("total"));
             AVG = Double.parseDouble(prop.getProperty("avg"));
-            System.out.println("sucessfully load params, bm25");
+            //System.out.println("sucessfully load params, bm25");
         } catch (IOException ioe) {
             System.out.println("error loading params: " + ioe);
         }
@@ -39,7 +39,7 @@ public class BM25Calculator {
         for(QueryItem q: query.getItem()) {
             result += calculate(q.getFt(), q.getFdt(), query.getD());
         }
-        System.out.println("bm25　result: " + result);
+        //System.out.println("bm25　result: " + result);
         return result;
     }
 

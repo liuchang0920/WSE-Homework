@@ -83,7 +83,7 @@ public class ParseWETFile {
 
         try {
 
-            FileWriter fw = new FileWriter(INTERMEDIATE_FILE, false);
+            FileWriter fw = new FileWriter(INTERMEDIATE_FILE+"test", false);
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter out = new PrintWriter(bw);
 
@@ -177,17 +177,16 @@ public class ParseWETFile {
         }
 
         // write to intermediate file
-        for(String word: hasVisited) {
-            out.printf("%s\t%d\t%d\n", word, URLTable.getCounter(), wordDict.get(word));
-        }
-        out.flush();
+//        for(String word: hasVisited) {
+//            out.printf("%s\t%d\t%d\n", word, URLTable.getCounter(), wordDict.get(word));
+//        }
 
         // update url table
         urlTable.addURL(url, wordCounter);
 
         // generate snapshot
         int curDocId = this.urlTable.getCounter()-1;
-        this.snapshotService.execute(new SnapShotWriter(SNAPHOT_PATH, curDocId, sbToSave.toString()));
+        //this.snapshotService.execute(new SnapShotWriter(SNAPHOT_PATH, curDocId, sbToSave.toString()));
     }
 
 
@@ -198,13 +197,13 @@ public class ParseWETFile {
             oos.writeObject(this.urlTable);
             oos.close();
             fos.close();
-            System.out.println(URLTable.getCounter());
-            System.out.println("finish writing url table to file");
-            System.out.println("url table size: " + urlTable.getSize());
+            log.info(URLTable.getCounter()+"");
+            log.info("finish writing url table to file");
+            log.info("url table size: " + urlTable.getSize());
         } catch (IOException ioe) {
-            System.out.println("error writing url table to file");
-            System.out.println(ioe);
-            System.out.println(ioe.getMessage());
+            log.log(Level.SEVERE, "error writing url table to file");
+            log.log(Level.SEVERE, ioe+"");
+            log.log(Level.SEVERE, ioe.getMessage());
         }
 
     }

@@ -56,6 +56,7 @@ public class QueryHandler implements HttpHandler {
             System.out.println("error while parsing config file: " + ioe.getMessage());
         }
 
+        log.info("loading parameters");
         // init lexicon
         lexicon = new Lexicon();
         loadLexicon();
@@ -95,9 +96,7 @@ public class QueryHandler implements HttpHandler {
                             endIndex
                     );
                     lexicon.addWord(word, litem);
-                    if("__".equals(word)) {
-                        System.out.println("lexicon information: " + litem);
-                    }
+
                 } catch (Exception e) {
                     log.log(Level.SEVERE, "unexpected exception"+e.getMessage());
                     log.log(Level.SEVERE, e.getCause()+"");
@@ -106,7 +105,7 @@ public class QueryHandler implements HttpHandler {
                 line = br.readLine();
             }
 
-            System.out.println("finish loading lexicon file, lexicon size: " + lexicon.getMap().size());
+            log.info("finish loading lexicon file, lexicon size: " + lexicon.getMap().size());
 
         } catch (IOException ioe) {
             log.log(Level.SEVERE, "ioexception reading lexicon file");
@@ -117,14 +116,13 @@ public class QueryHandler implements HttpHandler {
 
         FileInputStream fis;
         ObjectInputStream ois;
-        System.out.println("loading url table");
+        log.info("loading url table");
         try {
             fis = new FileInputStream(URLTable_FILE);
             ois = new ObjectInputStream(fis);
             urlTable = (URLTable) ois.readObject();
-            System.out.println("finish loading url table, size: " + urlTable.getSize());
+            log.info("finish loading url table, size: " + urlTable.getSize());
         } catch (Exception e) {
-            System.out.println("error while loading url table");
             log.log(Level.SEVERE, "error while loading url table: " + e.getMessage());
         }
     }
@@ -134,7 +132,7 @@ public class QueryHandler implements HttpHandler {
         Queue<QueryResult> result = new PriorityQueue<>(new Comparator<QueryResult>() {
             @Override
             public int compare(QueryResult o1, QueryResult o2) {
-                return (int)(o2.getBm25Value() - o1.getBm25Value());
+                return (int)(o1.getBm25Value() - o2.getBm25Value());
             }
         });
 
@@ -150,12 +148,12 @@ public class QueryHandler implements HttpHandler {
         while(did.getDocId() < maxDoc) { // 记录docid最大值
 
             if(lastDocId == did.getDocId()) {
-                System.out.println("same id...");
+                //System.out.println("same id...");
                 break;
             }
             lastDocId = did.getDocId();
 
-            System.out.println("current search did: " + did.getDocId());
+            //System.out.println("current search did: " + did.getDocId());
             frequencies = new ArrayList<>();
             did = nextGEQ(lp.get(0), did.getDocId()); // start pair
             frequencies.add(did);
@@ -185,7 +183,7 @@ public class QueryHandler implements HttpHandler {
 
                     Query query = new Query(items, urlTable.getMap().get(did.getDocId()).getSize());
                     double bm25 = calculator.calculate(query);
-                    System.out.println("docId: " + did.getDocId() + "bm25 value: " + bm25);
+                    //log.info("docId: " + did.getDocId() + "bm25 value: " + bm25);
                     result.add(new QueryResult(did.getDocId(), bm25));
 
                     did.setDocId(did.getDocId()+1);
@@ -195,18 +193,19 @@ public class QueryHandler implements HttpHandler {
                 if(tempDoc == did.getDocId()) {
                     System.out.println("break...");
                 }
-                System.out.println("update docId:" + tempDoc);
+                //System.out.println("update docId:" + tempDoc);
                 did.setDocId(tempDoc);// docid and frequency not compatible
             }
 
         }
-        System.out.println("finish daat....");
+        //finish daat
+
         // close list
         for(TermInformation termInfo: lp) {
             closeList(termInfo.getRandomAccessFile());
         }
 
-        System.out.println("current result size: " + result.size());
+        //System.out.println("current result size: " + result.size());
         while(result.size()>MAX_RESULT) {
             result.poll();
         }
@@ -239,8 +238,8 @@ public class QueryHandler implements HttpHandler {
             // update curLastDocId
             curLastDocId = auxiliarTable[curIndex];
         }
-        System.out.println("auxiliary size: " + auxiliarTable.length);
-        System.out.println("jump size: " + jumpSize);
+        //System.out.println("auxiliary size: " + auxiliarTable.length);
+        //System.out.println("jump size: " + jumpSize);
         if(curIndex>=auxiliarTable.length-2) {
             return new DocFrequency(maxDoc+1, -1);
         }
@@ -250,7 +249,7 @@ public class QueryHandler implements HttpHandler {
             int chunkSize = auxiliarTable[curIndex+1];
             byte[] compressedChunk = new byte[chunkSize];
             RandomAccessFile randomAccessFile = termInformation.getRandomAccessFile();
-            System.out.println("seek: " + (termInformation.getStartIndex()+(long)jumpSize));
+            //System.out.println("seek: " + (termInformation.getStartIndex()+(long)jumpSize));
             randomAccessFile.seek(termInformation.getStartIndex()+(long)jumpSize); // minus 1 ?
             randomAccessFile.read(compressedChunk);
             List<Integer> uncompressedChunk = VariableByteCode.decode(compressedChunk);
@@ -258,7 +257,7 @@ public class QueryHandler implements HttpHandler {
             // try to find the first docId that is larger than docId
             //System.out.println("uncompressed chunk: " + uncompressedChunk);
             int curDocId = uncompressedChunk.get(0);
-            System.out.println("uncompressed chunk: " + uncompressedChunk.toString());
+            //System.out.println("uncompressed chunk: " + uncompressedChunk.toString());
             int tempIndex = 0;
             while(curDocId<docId) {
                 // System.out.print("[docId: " + curDocId + ", freq:" + uncompressedChunk.get(tempIndex+1) + "]");
@@ -266,11 +265,10 @@ public class QueryHandler implements HttpHandler {
                 if(tempIndex>=uncompressedChunk.size()-2) break;
                 curDocId = uncompressedChunk.get(tempIndex);
             }
-            System.out.println();
 
             int findFrequency = uncompressedChunk.get(tempIndex+1);
             //System.out.println("currenct docid is: " + curDocId);
-            System.out.println("find doc, frequency pair: " + curDocId + "," + findFrequency);
+            //System.out.println("find doc, frequency pair: " + curDocId + "," + findFrequency);
             return new DocFrequency(curDocId, findFrequency);
 
         } catch (IOException ioe) {
@@ -300,14 +298,14 @@ public class QueryHandler implements HttpHandler {
                 raf.seek(lexiconItem.getStartIndex());
                 raf.read(auxiliaryBytes);
                 int[] auxiliaryTable = ArrayConverter.toIntArray(auxiliaryBytes);
-                System.out.println("auxiliary table");
-                for(int item: auxiliaryTable) {
-                    System.out.println(item);
-                }
+                //System.out.println("auxiliary table");
+//                for(int item: auxiliaryTable) {
+//                    System.out.println(item);
+//                }
 
                 TermInformation termInformation = new TermInformation(raf, auxiliaryTable);
                 termInformation.setStartIndex(lexiconItem.getStartIndex());// set start index
-                System.out.println("start index: " + lexiconItem.getStartIndex());
+                //System.out.println("start index: " + lexiconItem.getStartIndex());
                 termInformation.setCurIndex(0);
                 return termInformation;
 
@@ -326,7 +324,7 @@ public class QueryHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
-        System.out.println(" daat.. ");
+        log.info("receive request");
         // implement DAAT
         List<TermInformation> lp = new ArrayList<>();
         Map<String, String> params = queryToMap(httpExchange.getRequestURI().getQuery());
@@ -337,10 +335,9 @@ public class QueryHandler implements HttpHandler {
             keywordList.add(keyword);
             //lp.add(openList(keyword));
         }
+        keywordList = new ArrayList<>(new HashSet<>(keywordList)); // delete duplicate words in the input
 
-        Queue<QueryResult> queryResults  = query(keywordList);//= new ArrayList<>(); //
-//        queryResults.add(new QueryResult(1, 13));
-//        queryResults.add(new QueryResult(2, 14));
+        Queue<QueryResult> queryResults  = query(keywordList);
 
        // System.out.println("finish query: " + queryResults.size());
         List<QueryResult> finalResult = new ArrayList<>();
@@ -353,7 +350,7 @@ public class QueryHandler implements HttpHandler {
 
             finalResult.add(cur);
         }
-        System.out.println("finish generating snippets");
+        log.info("finish generating snippets");
 
         // return json object
         JsonObject jsonObject = new JsonObject();

@@ -25,7 +25,7 @@ public class BuildInvertedIndexCompress {
     // number of posting per chunk
     private static final int NUM_OF_POSTING = 500;
     // config file
-    private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-30-files";
+    private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-80-files";
     // logging
     private static final Logger log = Logger.getLogger("buildInvertedIndex");
 

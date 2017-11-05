@@ -1,4 +1,15 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# fetch first 100 lines
-wget https://commoncrawl.s3.amazonaws.com/crawl-data/CC-MAIN-2017-39/segments/1505818685129.23/wet/CC-MAIN-20170919112242-20170919132242-00{052..120}.warc.wet.gz
+number=$1
+prefix='https://commoncrawl.s3.amazonaws.com/'
+
+count=0
+for file in `cat wet.paths`
+do
+	wget $prefix$file
+	if [ $count -eq $number ]
+	then
+		break
+	fi
+	count=$(($count+1))
+done

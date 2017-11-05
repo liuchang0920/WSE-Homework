@@ -13,10 +13,8 @@ public class QueryExecution {
     private static final Logger log = Logger.getLogger("QueryExecution");
 
     public static void main(String[] args) {
-
         // start backend server
         try{
-
             HttpServer server = HttpServer.create(new InetSocketAddress(8888), 0);
             server.createContext("/query", new QueryHandler());
             server.setExecutor(null);
