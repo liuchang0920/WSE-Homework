@@ -21,26 +21,23 @@ public class ParseWETFile {
     private static final String EMPTY_STR = "";
     private static final String URL_PRE_STR = "WARC-Target-URI:";
     private static final Pattern PATTERN = Pattern.compile("[\\w']+");
-    private static final String PARSE_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-30-files";
+    private static final String PARSE_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-100-files";
     //private static final String PARSE_CONFIG_FILE = "/media/liuchang/HardDrive/study/wse/hw2-data/config/bm25-config-30-files";
 
-    //  URL table
-    private URLTable urlTable = new URLTable(new HashMap<>());
     private static String URLTable_FILE;
-    // wet file path
-    //private static final String WET_FILE_FOLDER = "/media/liuchang/New Volume/study/wse/hw2-data/sample-data/";
     private static String WET_FILE_FOLDER;
-    // intermediate file
     private static String INTERMEDIATE_FILE;
-    //private static final String INTERMEDIATE_FILE = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-intermediate/temp.txt";
 
     // multi threading
     private static final int NUM_OF_PARALLEL = 10;
     private static String SNAPHOT_PATH;
-    public ExecutorService snapshotService;
-    //private ExecutorService intermediatePostingService;
     // save params for bm25
     private static String BM25_CONFIG_FILE;
+
+    //private static final String INTERMEDIATE_FILE = "/media/liuchang/New Volume/study/wse/hw2-data/inverted-intermediate/temp.txt";
+    private URLTable urlTable = new URLTable(new HashMap<>());
+
+    public ExecutorService snapshotService;
 
     // logging
     private static final Logger log = Logger.getLogger("parseWETFilelogger");
@@ -64,9 +61,7 @@ public class ParseWETFile {
             System.out.println("error while parsing config file: " + ioe.getMessage());
         }
 
-        // switch to multi threading
         this.snapshotService = Executors.newFixedThreadPool(NUM_OF_PARALLEL);
-        //this.intermediatePostingService = Executors.newFixedThreadPool(NUM_OF_PARALLEL);
     }
 
     public static void main(String[] args) throws IOException{
@@ -77,7 +72,6 @@ public class ParseWETFile {
 
     public void main() {
 
-        // set log
         log.setLevel(Level.ALL);
         log.info("start generating intermediate file");
 
@@ -163,7 +157,6 @@ public class ParseWETFile {
             }
             i++;
         }
-
         // word count
         StringBuffer sbToSave = new StringBuffer();
         while(i<split.length) {
