@@ -21,7 +21,7 @@ public class ParseWETFile {
     private static final String EMPTY_STR = "";
     private static final String URL_PRE_STR = "WARC-Target-URI:";
     private static final Pattern PATTERN = Pattern.compile("[\\w']+");
-    private static final String PARSE_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-100-files";
+    private static final String PARSE_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-80-files";
     //private static final String PARSE_CONFIG_FILE = "/media/liuchang/HardDrive/study/wse/hw2-data/config/bm25-config-30-files";
 
     private static String URLTable_FILE;
@@ -56,6 +56,7 @@ public class ParseWETFile {
             this.SNAPHOT_PATH = prop.getProperty("SNAPHOT_PATH");
             this.BM25_CONFIG_FILE = prop.getProperty("BM25_CONFIG_FILE");
             System.out.println("bm25 path: " + this.BM25_CONFIG_FILE);
+            System.out.println("wet file folder: " + this.WET_FILE_FOLDER);
             System.out.println("finish loading params");
         } catch (IOException ioe) {
             System.out.println("error while parsing config file: " + ioe.getMessage());

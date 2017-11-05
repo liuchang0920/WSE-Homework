@@ -18,7 +18,7 @@ public class QueryHandler implements HttpHandler {
 
 
     //private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config";
-    private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-30-files";
+    private static final String COMMON_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/common-config-80-files";
 
     private static String INVERTED_FILE;
     private static String LEXICON_FILE;
@@ -185,6 +185,7 @@ public class QueryHandler implements HttpHandler {
 
                     Query query = new Query(items, urlTable.getMap().get(did.getDocId()).getSize());
                     double bm25 = calculator.calculate(query);
+                    System.out.println("docId: " + did.getDocId() + "bm25 value: " + bm25);
                     result.add(new QueryResult(did.getDocId(), bm25));
 
                     did.setDocId(did.getDocId()+1);

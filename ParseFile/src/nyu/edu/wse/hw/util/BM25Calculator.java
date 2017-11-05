@@ -13,7 +13,7 @@ public class BM25Calculator {
     private static final double k1 = 1.2;
     private static final double b = 0.75;
     //public static final String BM25_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/bm25-config";
-    public static final String BM25_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/bm25-config-100-files";
+    public static final String BM25_CONFIG_FILE = "/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/bm25-config-80-files";
 
     private int N;
     private double AVG;

@@ -1,9 +1,9 @@
 # used for ParseWetFileConfig
 URLTable_FILE=/media/liuchang/HardDrive/study/wse/hw3-data/urltable/URLTable.txt
-WET_FILE_FOLDER=/media/liuchang/HardDrive/study/wse/hw3-data/wet-files-100/
+WET_FILE_FOLDER=/media/liuchang/HardDrive/study/wse/hw3-data/wet-files-80/
 INTERMEDIATE_FILE=/media/liuchang/HardDrive/study/wse/hw3-data/inverted-intermediate/temp.txt
 INTERMEDIATE_FILE_SORTED=/media/liuchang/HardDrive/study/wse/hw3-data/inverted-intermediate/temp-sorted.txt
 SNAPHOT_PATH=/media/liuchang/HardDrive/study/wse/hw3-data/snapshot/
-BM25_CONFIG_FILE=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/bm25-config-100-files
+BM25_CONFIG_FILE=/home/liuchang/Documents/study/wse/homework/hw3/WSE-Homework/ParseFile/config/bm25-config-80-files
 INVERTED_FILE=/media/liuchang/HardDrive/study/wse/hw3-data/inverted-index/inverted.out
 LEXICON_FILE=/media/liuchang/HardDrive/study/wse/hw3-data/lexicon/lexicon.out
