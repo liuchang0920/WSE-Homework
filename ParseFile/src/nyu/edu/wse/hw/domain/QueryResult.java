@@ -38,7 +38,7 @@ public class QueryResult {
 
     @Override
     public String toString() {
-        return "QueryResult{" +
+        return "{" +
                 "docId=" + docId +
                 ", bm25Value=" + bm25Value +
                 ", snippet='" + snippet + '\'' +

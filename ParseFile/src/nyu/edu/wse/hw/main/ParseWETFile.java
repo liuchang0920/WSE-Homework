@@ -177,16 +177,16 @@ public class ParseWETFile {
         }
 
         // write to intermediate file
-//        for(String word: hasVisited) {
-//            out.printf("%s\t%d\t%d\n", word, URLTable.getCounter(), wordDict.get(word));
-//        }
+        for(String word: hasVisited) {
+            out.printf("%s\t%d\t%d\n", word, URLTable.getCounter(), wordDict.get(word));
+        }
 
         // update url table
         urlTable.addURL(url, wordCounter);
 
         // generate snapshot
         int curDocId = this.urlTable.getCounter()-1;
-        //this.snapshotService.execute(new SnapShotWriter(SNAPHOT_PATH, curDocId, sbToSave.toString()));
+        this.snapshotService.execute(new SnapShotWriter(SNAPHOT_PATH, curDocId, sbToSave.toString()));
     }
 
 

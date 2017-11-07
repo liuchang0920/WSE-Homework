@@ -1,5 +1,6 @@
 package nyu.edu.wse.hw.handler;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -148,12 +149,12 @@ public class QueryHandler implements HttpHandler {
         while(did.getDocId() < maxDoc) { // 记录docid最大值
 
             if(lastDocId == did.getDocId()) {
-                //System.out.println("same id...");
+                System.out.println("same id...");
                 break;
             }
             lastDocId = did.getDocId();
 
-            //System.out.println("current search did: " + did.getDocId());
+            System.out.println("current search did: " + did.getDocId());
             frequencies = new ArrayList<>();
             did = nextGEQ(lp.get(0), did.getDocId()); // start pair
             frequencies.add(did);
@@ -224,7 +225,11 @@ public class QueryHandler implements HttpHandler {
     public DocFrequency nextGEQ(TermInformation termInformation, int docId) {
         // get the first docId that is >= docId, if the max < docID: return maxDoc+1
         int[] auxiliarTable = termInformation.getAuxiliaryTable();
-
+        System.out.println("auxiliary table size: " + auxiliarTable.length);
+        for (int i=0;i<auxiliarTable.length;i++) {
+            System.out.println(auxiliarTable[i] + ' ');
+        }
+        System.out.println("auxiliary table: " + auxiliarTable.toString());
         int curIndex = 0;// first chunk
         int curLastDocId = auxiliarTable[curIndex];// (last docId, chunksize)
         int jumpSize = auxiliarTable.length*4;// skip the size of the auxiliary table (docId, chunksize) pair, skip how many ?
@@ -240,7 +245,7 @@ public class QueryHandler implements HttpHandler {
         }
         //System.out.println("auxiliary size: " + auxiliarTable.length);
         //System.out.println("jump size: " + jumpSize);
-        if(curIndex>=auxiliarTable.length-2) {
+        if(curIndex>auxiliarTable.length-2) {
             return new DocFrequency(maxDoc+1, -1);
         }
         // uncompress chunk
@@ -339,7 +344,7 @@ public class QueryHandler implements HttpHandler {
 
         Queue<QueryResult> queryResults  = query(keywordList);
 
-       // System.out.println("finish query: " + queryResults.size());
+        System.out.println("finish query: " + queryResults.size());
         List<QueryResult> finalResult = new ArrayList<>();
 
         while(queryResults.size()>0) {
@@ -353,9 +358,12 @@ public class QueryHandler implements HttpHandler {
         log.info("finish generating snippets");
 
         // return json object
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("result", finalResult.toString());
-        String res = jsonObject.toString();
+//        JsonObject jsonObject = new JsonObject();
+//        jsonObject.addProperty("result", finalResult.toString());
+        //String res = jsonObject.toString();
+        String res = new Gson().toJson(finalResult);
+        httpExchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+        //httpExchange.getRequestHeaders().add("Access-Control-Allow-Origin", "*");//HttpExchange
         httpExchange.sendResponseHeaders(200, res.getBytes().length);
         OutputStream os = httpExchange.getResponseBody();
         os.write(res.getBytes());
