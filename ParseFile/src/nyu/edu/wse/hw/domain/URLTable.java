@@ -41,4 +41,10 @@ public class URLTable implements Serializable{
     public String getUrl(int docId) {
         return map.get(docId).getUrl();
     }
+
+    public int getDocSize(int docId) {
+        if (map.containsKey(docId)) {
+            return map.get(docId).getSize();
+        } return 0;
+    }
 }

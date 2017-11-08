@@ -63,15 +63,7 @@ public class SnippetGenerator {
     }
 
     private String generateSnippet(String content, Set<String> keywords) {
-//        String[] sentences = content.split("\\.");
-//        for(String keyword: keywords) {
-//            for(String sentence: sentences) {
-//                if(sentence.matches(".*?\\bbeautiful\\b.*?")) {
-//                    return sentence;
-//                }
-//            }
-//        }
-//        return "....";
+
         for(String keyword: keywords) {
             int index = content.indexOf(keyword);
             if( index!= -1) {

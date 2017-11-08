@@ -325,6 +325,64 @@ public class QueryHandler implements HttpHandler {
         }
     }
 
+    // or query
+    public Queue<QueryResult> orQuery(List<String> keywords) {
+
+        HashMap<Integer, QueryResult> map = new HashMap<>(); // docId: QueryResult
+        Queue<QueryResult> result = new PriorityQueue<>(new Comparator<QueryResult>() {
+            @Override
+            public int compare(QueryResult o1, QueryResult o2) {
+                return (int)(o1.getBm25Value() - o2.getBm25Value());
+            }
+        });
+
+        // implement or query
+
+        for(String keyword: keywords) {
+            try {
+                TermInformation termInformation = openList(keyword);
+                int[] auxiliaryTable = termInformation.getAuxiliaryTable();
+                int compressedSize = 0;
+
+                for(int i=1;i<auxiliaryTable.length;i+=2) {
+                    compressedSize += auxiliaryTable[i];
+                }
+                byte[] compressedChunk = new byte[compressedSize];
+
+                // seek
+                RandomAccessFile raf = termInformation.getRandomAccessFile();
+                raf.seek(termInformation.getStartIndex() + auxiliaryTable.length * 4 );
+                raf.read(compressedChunk);
+                List<Integer> uncompressedChunk = VariableByteCode.decode(compressedChunk);
+                for(int i=0;i+1<uncompressedChunk.size();i+=2) {
+                    // docId, frequency
+                    int docId = uncompressedChunk.get(i);
+                    int freq = uncompressedChunk.get(i+1);
+                    QueryItem qi = new QueryItem(keyword, lexicon.getWordInfo(keyword).getCount(), freq);
+                    List<QueryItem> l = new ArrayList<>();l.add(qi);
+                    Query query = new Query(l, urlTable.getDocSize(docId));
+                    if(map.containsKey(docId)) {
+                        QueryResult qr = map.get(docId);
+                        qr.setBm25Value(qr.getBm25Value() + calculator.calculate(query));
+                    } else {
+                        map.put(docId, new QueryResult(docId, calculator.calculate(query)));
+                    }
+                }
+
+            } catch (IOException ioe) {
+                log.log(Level.SEVERE, "error while doing or query");
+            }
+        }
+
+        for(Map.Entry<Integer, QueryResult> entry: map.entrySet()) {
+            result.offer(entry.getValue());
+        }
+        while(result.size() > MAX_RESULT ) {
+            result.poll();
+        }
+        return result;
+
+    }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -334,7 +392,7 @@ public class QueryHandler implements HttpHandler {
         List<TermInformation> lp = new ArrayList<>();
         Map<String, String> params = queryToMap(httpExchange.getRequestURI().getQuery());
         String keywords = params.get("keyword");
-
+        String mode = params.get("mode");
         List<String> keywordList = new ArrayList<>();
         for(String keyword: keywords.split("\\+")) {
             keywordList.add(keyword);
@@ -342,7 +400,14 @@ public class QueryHandler implements HttpHandler {
         }
         keywordList = new ArrayList<>(new HashSet<>(keywordList)); // delete duplicate words in the input
 
-        Queue<QueryResult> queryResults  = query(keywordList);
+        Queue<QueryResult> queryResults;
+        if("and".equals(mode)) {
+            log.info("and query");
+            queryResults  = query(keywordList);
+        } else {
+            log.info("and query");
+            queryResults  = orQuery(keywordList);
+        }
 
         System.out.println("finish query: " + queryResults.size());
         List<QueryResult> finalResult = new ArrayList<>();
@@ -357,10 +422,6 @@ public class QueryHandler implements HttpHandler {
         }
         log.info("finish generating snippets");
 
-        // return json object
-//        JsonObject jsonObject = new JsonObject();
-//        jsonObject.addProperty("result", finalResult.toString());
-        //String res = jsonObject.toString();
         String res = new Gson().toJson(finalResult);
         httpExchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
         //httpExchange.getRequestHeaders().add("Access-Control-Allow-Origin", "*");//HttpExchange

@@ -20,6 +20,10 @@ public class QueryResult {
         return bm25Value;
     }
 
+    public void setBm25Value(double bm25Value) {
+        this.bm25Value = bm25Value;
+    }
+
     public String getSnippet() {
         return snippet;
     }
